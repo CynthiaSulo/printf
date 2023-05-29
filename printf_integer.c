@@ -1,47 +1,55 @@
 #include <stdio.h>
 #include <stdarg.h>
 /**
-  *my_printf - handle conversion specifiers
-  *@format: pointer to constant string
-  *Return: number of characters printed
+  *_printf - handle conversion specifiers
+  *@format: pointer to format string
+  *Return: total no. of characters printed
   */
-int my_printf(char *format, ...)
+int _printf(const char *format, ...)
 {
+	int i = 0, total_chars = 0;
 	va_list args;
-	int count = 0;
-
+	
+	if (!format)
+		return (-1);
+	
 	va_start(args, format);
-
-	while (*format != '\0')
+	while (format[i] != '\0')
 	{
-		if (*format == '%')
+		if (format[i] == '%')
 		{
-			format++;
-			switch (*format)
+			i++;
+			switch (format[i])
 			{
 				case 'd':
+					{
+						int num = va_arg(args, int);
+						total_chars += printf("%d", num);
+						break;
+					}
 				case 'i':
 					{
-						int value = va_arg(args, int);
-
-						printf("%d", value);
-						count++;
+						int num = va_arg(args, int);
+						total_chars += printf("%i", num);
 						break;
 					}
 				default:
 					{
-						printf("Unknown format specifier: %c\n", *format);
+						if (putchar(format[i - 1]) == EOF || putchar(format[i]) == EOF)
+							return (-1);
+						total_chars += 2;
 						break;
 					}
 			}
 		}
 		else
 		{
-			printf("%c", *format);
-			count++;
+			if (putchar(format[i]) == EOF)
+				return (-1);
+			total_chars++;
 		}
-		format++;
+		i++;
 	}
 	va_end(args);
-	return (count);
+	return (total_chars);
 }
