@@ -59,7 +59,7 @@ int _printf(const char *format, ...)
   */
 int printf_string(va_list args)
 {
-	char *s = va_arg(arg, char *);
+	char *s = va_arg(args, char *);
 	int len = 0;
 
 	while (*s != '\0')
