@@ -20,31 +20,36 @@ int _printf(const char *format, ...)
 
 	va_start(args, format);
 	while (format[i] != '\0')
-		if (format[i] == '%')
-			i++;
-	switch (format[i])
 	{
-		case '%':
-			total_chars += printf_char(args);
-			break;
-		case 's':
-			total_chars += printf_string(args);
-			break;
-		case 'c':
-			total_chars += printf_char(args);
-			break;
-		default:
-			if (write(STDOUT_FILENO, &format[i - 1], 2) == -1)
-				return (-1);
-			total_chars += 2;
-			break;
-			else
-			{
-				if (write(STDOUT_FILENO, &format[i], 1) == -1)
-					return (-1);
-				total_chars++;
-			}
+		if (format[i] == '%')
+		{
 			i++;
+			switch (format[i])
+			{
+				case '%':
+					total_chars += _printf_char(args);
+					break;
+				case 's':
+					total_chars += printf_string(args);
+					break;
+				case 'c':
+					total_chars += _printf_char(args);
+					break;
+				default:
+					if (write(STDOUT_FILENO, &format[i - 1], 2) == -1)
+
+						return (-1);
+					total_chars += 2;
+					break;
+			}
+		}
+		else
+		{
+			if (write(STDOUT_FILENO, &format[i], 1) == -1)
+				return (-1);
+			total_chars++;
+		}
+		i++;
 	}
 	va_end(args);
 	return (total_chars);
@@ -64,6 +69,7 @@ int printf_string(va_list args)
 }
 int _printf_char(va_list args)
 {
+
 	int c = va_arg(args, int);
-	return (write(STDOUT_FILENO, &c, 1));
+	return write(STDOUT_FILENO, &c, 1);
 }
