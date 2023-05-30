@@ -53,20 +53,6 @@ int _printf(const char *format, ...)
 	return (total_chars);
 }
 /**
-  * _printf_percent - prints a single percentage sign (%)
-  * @args: unused argument list
-  * Return: the total number of characters printed (always 1)
-  */
-int _printf_percent(va_list args)
-{
-	char percent = '%';
-	(void)args;
-
-	if (write(STDOUT_FILENO, &percent, 1) == -1)
-		return (-1);
-	return (1);
-}
-/**
   * printf_string - prints a string
   * @args: list of arguments
   * Return: total number of characters
