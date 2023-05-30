@@ -1,83 +1,88 @@
-#include <stdio.h>
-#include <unistd.h>
+#include "main.h"
 #include <stdarg.h>
-#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
+/**
+ * _printf - custom implementation of printf function
+ * @format: the format string
+ * ...: variable arguments
+ * Return: the number of bytes printed
+ */
 int _printf(const char *format, ...)
 {
-	int total_chars = 0, format_length = 0, buffer_index = 0, i = 0;
+	int i = 0, total_chars = 0;
 	va_list args;
-	const char *p = format;
-	char *buffer;
 
-	va_start(args, format);
-	while (*p++)
-		format_length++;
-	buffer = (char *)malloc((format_length + 1) * sizeof(char));
-	if (!buffer)
-	{
-		va_end(args);
+	if (!format)
 		return (-1);
-	}
-	while (format[i])
+	va_start(args, format);
+	while (format[i] != '\0')
 	{
-		if (format[i] != '%')
+		if (format[i] == '%')
 		{
-			buffer[buffer_index++] = format[i];
-			if (buffer_index == format_length)
+			i++;
+			switch (format[i])
 			{
-				total_chars += write(STDOUT_FILENO, buffer, buffer_index);
-				buffer_index = 0;
+				case '%':
+					total_chars += _printf_char(args);
+					break;
+				case 's':
+					total_chars += printf_string(args);
+					break;
+				case 'c':
+					total_chars += _printf_char(args);
+					break;
+				default:
+					if (write(STDOUT_FILENO, &format[i - 1], 2) == -1)
+						return (-1);
+					total_chars += 2;
+					break;
 			}
-			total_chars++;
 		}
 		else
 		{
-			i++;
-			if (format[i] == '%')
-			{
-				buffer[buffer_index++] = '%';
-				if (buffer_index == format_length)
-				{
-					total_chars += write(STDOUT_FILENO, buffer, buffer_index);
-					buffer_index = 0;
-				}
-				total_chars++;
-			}
-			else if (format[i] == 'c')
-			{
-				buffer[buffer_index++] = (char)va_arg(args, int);
-				if (buffer_index == format_length)
-				{
-					total_chars += write(STDOUT_FILENO, buffer, buffer_index);
-					buffer_index = 0;
-				}
-				total_chars++;
-			}
-			else if (format[i] == 's')
-			{
-				const char *str = va_arg(args, const char *);
-				int len = 0;
-
-				while (str[len])
-				{
-					buffer[buffer_index++] = str[len++];
-					if (buffer_index == format_length)
-					{
-						total_chars += write(STDOUT_FILENO, buffer, buffer_index);
-						buffer_index = 0;
-					}
-					total_chars++;
-				}
-			}
+			if (write(STDOUT_FILENO, &format[i], 1) == -1)
+				return (-1);
+			total_chars++;
 		}
 		i++;
 	}
-	if (buffer_index)
-	{
-		total_chars += write(STDOUT_FILENO, buffer, buffer_index);
-	}
-	free(buffer);
 	va_end(args);
 	return (total_chars);
+}
+/**
+ * printf_string - handles printing strings
+ * @args: list of arguments
+ * Return: total number of characters
+ */
+int printf_string(va_list args)
+{
+	char *str = va_arg(args, char *);
+	int len, written;
+
+	if (!str)
+		str = "(null)";
+
+	len = strlen(str);
+	written = write(STDOUT_FILENO, str, len);
+	if (written != len)
+		return (-1);
+
+	return (len);
+}
+/**
+ * _printf_char - handles printing characters
+ * @args: list of arguments
+ * Return: total number of characters
+ */
+int _printf_char(va_list args)
+{
+	char c = va_arg(args, int);
+	int written = write(STDOUT_FILENO, &c, 1);
+
+	if (written != 1)
+		return (-1);
+
+	return (1);
 }
