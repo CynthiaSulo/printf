@@ -1,69 +1,89 @@
+#include <stdio.h>
 #include <stdarg.h>
-#include <unistd.h>
-#include "main.h"
+#include <stdlib.h>
 /**
- * print_integer - Prints an integer (%d %i)
- * @args: va_list containing the integer argument
- * Return: Number of characters printed
- */
-int print_integer(va_list args)
+  *print_integer - print no. of characerts
+  *@num: no. to be printed
+  *Return: 0
+  */
+void print_integer(int num)
 {
-	int input, temp;
-	int count = 0, length = 0, is_negative = 0;
-	char integer_str[12];
-	char *ptr = 0;
+	int count = 0, length = 0, is_negative = 0, temp = num, i = length - 1;
+	char *num_str = NULL;
 
-	input = va_arg(args, int);
-	if (input == 0)
+	if (num == 0)
 	{
-		if (write(1, "0", 1) == -1)
-			return (-1);
-		ptr++;
-		return (1);
+		putchar('0');
+		return;
 	}
-	if (input < 0)
+	if (num < 0)
 	{
 		is_negative = 1;
-		input = -input;
+		num = -num;
 		count++;
 	}
-	while (input != 0)
+	while (temp != 0)
 	{
-		integer_str[length] = (input % 10) + '0';
-		input /= 10;
+		temp /= 10;
 		length++;
+	}
+	count += length;
+	num_str = (char *)malloc((length + 1) * sizeof(char));
+	if (num_str == NULL)
+	{
+		return;
+	}
+	temp = num;
+	while (i >= 0)
+	{
+		num_str[i] = (temp % 10) + '0';
+		temp /= 10;
+		i--;
 	}
 	if (is_negative)
 	{
-		integer_str[length] = '-';
-		length++;
+		putchar('-');
 	}
-	temp = length - 1;
-	while (temp >= 0)
+	i = 0;
+	while (i < length)
 	{
-		if (write(1, &integer_str[temp], 1) == -1)
-			return (-1);
-		ptr++;
-		count++;
-		temp--;
+		putchar(num_str[i]);
+		i++;
 	}
-	return (count);
+	free(num_str);
 }
 /**
- * print_decimal - Prints a decimal (%d)
- * @args: va_list containing the decimal argument
- * Return: Number of characters printed
- */
-int print_decimal(va_list args)
+  *my_print - constant string to be printed
+  *@format: constant string
+  *@...: arguments passed
+  */
+int my_printf(const char *format, ...)
 {
-	return (print_integer(args));
-}
-/**
- * print_integer_i - Prints an integer (%i)
- * @args: va_list containing the integer argument
- * Return: Number of characters printed
- */
-int print_integer_i(va_list args)
-{
-	return (print_integer(args));
+	va_list args;
+
+	va_start(args, format);
+	while (*format)
+	{
+		if (*format == '%' && *(format + 1) == 'd')
+		{
+			int num = va_arg(args, int);
+
+			print_integer(num);
+			format += 2;
+		}
+		else if (*format == '%' && *(format + 1) == 'i')
+		{
+			int num = va_arg(args, int);
+
+			print_integer(num);
+			format += 2;
+		}
+		else
+		{
+			putchar(*format);
+			format++;
+		}
+	}
+	va_end(args);
+	return (0);
 }
