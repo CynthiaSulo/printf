@@ -1,89 +1,94 @@
-#include <stdio.h>
 #include <stdarg.h>
-#include <stdlib.h>
-/**
-  *print_integer - print no. of characerts
-  *@num: no. to be printed
-  *Return: 0
-  */
-void print_integer(int num)
-{
-	int count = 0, length = 0, is_negative = 0, temp = num, i = length - 1;
-	char *num_str = NULL;
+#include <unistd.h>
 
-	if (num == 0)
-	{
-		putchar('0');
-		return;
-	}
-	if (num < 0)
-	{
-		is_negative = 1;
-		num = -num;
-		count++;
-	}
-	while (temp != 0)
-	{
-		temp /= 10;
-		length++;
-	}
-	count += length;
-	num_str = (char *)malloc((length + 1) * sizeof(char));
-	if (num_str == NULL)
-	{
-		return;
-	}
-	temp = num;
-	while (i >= 0)
-	{
-		num_str[i] = (temp % 10) + '0';
-		temp /= 10;
-		i--;
-	}
-	if (is_negative)
-	{
-		putchar('-');
-	}
-	i = 0;
-	while (i < length)
-	{
-		putchar(num_str[i]);
-		i++;
-	}
-	free(num_str);
+int print_integer(va_list args)
+{
+    int input, temp;
+    int count = 0, length = 0, is_negative = 0;
+    char integer_str[12];
+    char *ptr = 0;
+
+    input = va_arg(args, int);
+
+    if (input == 0)
+    {
+        if (write(1, "0", 1) == -1)
+            return (-1);
+        ptr++;
+        return (1);
+    }
+
+    if (input < 0)
+    {
+        is_negative = 1;
+        input = -input;
+        count++;
+    }
+
+    while (input != 0)
+    {
+        integer_str[length] = (input % 10) + '0';
+        input /= 10;
+        length++;
+    }
+
+    if (is_negative)
+    {
+        integer_str[length] = '-';
+        length++;
+    }
+
+    temp = length - 1;
+    while (temp >= 0)
+    {
+        if (write(1, &integer_str[temp], 1) == -1)
+            return (-1);
+        ptr++;
+        count++;
+        temp--;
+    }
+
+    return (count);
 }
-/**
-  *my_print - constant string to be printed
-  *@format: constant string
-  *@...: arguments passed
-  */
+
+int print_decimal(va_list args)
+{
+    return print_integer(args);
+}
+
+int print_integer_i(va_list args)
+{
+    return print_integer(args);
+}
+
 int my_printf(const char *format, ...)
 {
-	va_list args;
+    va_list args;
+    int count = 0;
 
-	va_start(args, format);
-	while (*format)
-	{
-		if (*format == '%' && *(format + 1) == 'd')
-		{
-			int num = va_arg(args, int);
+    va_start(args, format);
 
-			print_integer(num);
-			format += 2;
-		}
-		else if (*format == '%' && *(format + 1) == 'i')
-		{
-			int num = va_arg(args, int);
+    while (*format)
+    {
+        if (*format == '%' && *(format + 1) == 'd')
+        {
+            count += print_decimal(args);
+            format += 2;
+        }
+        else if (*format == '%' && *(format + 1) == 'i')
+        {
+            count += print_integer_i(args);
+            format += 2;
+        }
+        else
+        {
+            if (write(1, format, 1) == -1)
+                return -1;
+            format++;
+            count++;
+        }
+    }
 
-			print_integer(num);
-			format += 2;
-		}
-		else
-		{
-			putchar(*format);
-			format++;
-		}
-	}
-	va_end(args);
-	return (0);
+    va_end(args);
+    return count;
 }
